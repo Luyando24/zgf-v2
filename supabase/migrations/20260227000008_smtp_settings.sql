@@ -1,0 +1,8 @@
+-- Add SMTP settings to the settings table
+ALTER TABLE settings 
+ADD COLUMN IF NOT EXISTS smtp_host VARCHAR(255),
+ADD COLUMN IF NOT EXISTS smtp_port INT,
+ADD COLUMN IF NOT EXISTS smtp_user VARCHAR(255),
+ADD COLUMN IF NOT EXISTS smtp_pass VARCHAR(255),
+ADD COLUMN IF NOT EXISTS smtp_from_email VARCHAR(255),
+ADD COLUMN IF NOT EXISTS smtp_from_name VARCHAR(255);

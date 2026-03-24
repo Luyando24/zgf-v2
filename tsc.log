@@ -1,0 +1,4 @@
+﻿src/app/admin/media/page.tsx(288,35): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/app/admin/media/page.tsx(303,35): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/app/admin/newsletter/campaigns/new/page.tsx(177,33): error TS2322: Type '{ content: string; onChange: Dispatch<SetStateAction<string>>; placeholder: string; }' is not assignable to type 'IntrinsicAttributes & RichTextEditorProps'.
+  Property 'content' does not exist on type 'IntrinsicAttributes & RichTextEditorProps'.
