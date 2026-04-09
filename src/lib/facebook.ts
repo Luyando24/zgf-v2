@@ -7,9 +7,9 @@ export interface FacebookPost {
 }
 
 export async function getRecentFacebookPosts(limit: number = 4): Promise<FacebookPost[]> {
-  const pageId = process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID;
-  const accessToken = process.env.FACEBOOK_PAGE_TOKEN;
-  const baseUri = process.env.FACEBOOK_PAGE_BASE_URI || 'https://graph.facebook.com/v22.0';
+  const pageId = (process.env.FACEBOOK_PAGE_ID || process.env.NEXT_PUBLIC_FACEBOOK_PAGE_ID || '').replace(/[`'"]/g, '').trim();
+  const accessToken = (process.env.FACEBOOK_PAGE_TOKEN || '').replace(/[`'"]/g, '').trim();
+  let baseUri = (process.env.FACEBOOK_PAGE_BASE_URI || 'https://graph.facebook.com/v22.0').replace(/[`'"]/g, '').trim();
 
   if (!pageId || !accessToken) {
     console.error('Facebook API credentials missing');
