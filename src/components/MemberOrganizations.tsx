@@ -19,7 +19,7 @@ export default function MemberOrganizations() {
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
           {memberOrgs.map((org) => (
-            <div key={org.name} className="group transition-all duration-300 grayscale hover:grayscale-0">
+            <div key={org.name} className="group transition-all duration-300">
               <div className="relative h-24 w-32 md:h-32 md:w-40">
                 <Image
                   src={org.logo}

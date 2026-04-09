@@ -1,13 +1,21 @@
 import Image from "next/image";
 import CTA from "@/components/CTA";
 import { CheckCircle2, Users, MapPin, Building2, UserCircle2 } from "lucide-react";
+import { getCommunitiesContent } from "@/app/admin/pages/actions";
 
-const mockCommunities = [
+const IconMap: Record<string, any> = {
+  'Users': Users,
+  'MapPin': MapPin,
+  'Building2': Building2,
+  'UserCircle2': UserCircle2
+};
+
+const defaultCommunities = [
   {
     name: "Urban Communities",
     description: "Working with residents in Lusaka's townships to improve local governance and service delivery.",
     color: "#61A534",
-    icon: <Building2 size={32} />,
+    icon: "Building2",
     features: [
       { feature: "Township governance support" },
       { feature: "Civic education programs" },
@@ -18,7 +26,7 @@ const mockCommunities = [
     name: "Rural Villages",
     description: "Supporting traditional communities in Northern Province with agricultural training and projects.",
     color: "#303030",
-    icon: <MapPin size={32} />,
+    icon: "MapPin",
     features: [
       { feature: "Agricultural skills training" },
       { feature: "Water & sanitation projects" },
@@ -29,7 +37,7 @@ const mockCommunities = [
     name: "Women's Groups",
     description: "Empowering women's cooperatives across Zambia through business and leadership training.",
     color: "#FFDD02",
-    icon: <Users size={32} />,
+    icon: "Users",
     features: [
       { feature: "Business management skills" },
       { feature: "Microfinance mentorship" },
@@ -40,7 +48,7 @@ const mockCommunities = [
     name: "Youth Networks",
     description: "Building capacity among young leaders through skills training and civic participation.",
     color: "#4A90E2",
-    icon: <UserCircle2 size={32} />,
+    icon: "UserCircle2",
     features: [
       { feature: "Vocational skills training" },
       { feature: "Youth governance platforms" },
@@ -49,45 +57,69 @@ const mockCommunities = [
   }
 ];
 
-const featuredPartnerships = [
+const defaultPartnerships = [
   {
     title: "Lusaka Urban Communities",
     description: "Working with residents in Lusaka's townships to improve local governance, enhance service delivery, and strengthen community participation.",
     image: "/images/communities/lusaka.jpg",
-    tags: ["Urban", "Governance", "Civic Education"],
+    metadata: { tags: ["Urban", "Governance", "Civic Education"] },
     color: "bg-primary"
   },
   {
     title: "Northern Province Villages",
     description: "Supporting traditional communities in Northern Province with agricultural training, water projects, and strengthening traditional structures.",
     image: "/images/communities/rural.jpg",
-    tags: ["Rural", "Agriculture", "Traditional"],
+    metadata: { tags: ["Rural", "Agriculture", "Traditional"] },
     color: "bg-green-600"
   },
   {
     title: "Women's Cooperatives",
     description: "Empowering women's groups across multiple provinces through business training, microfinance support, and leadership development.",
     image: "/images/communities/women.jpg",
-    tags: ["Women", "Business", "Leadership"],
+    metadata: { tags: ["Women", "Business", "Leadership"] },
     color: "bg-secondary"
   },
   {
     title: "Youth Networks",
     description: "Building capacity among young leaders through skills training, civic education, and platforms for youth participation.",
     image: "/images/communities/youth.jpg",
-    tags: ["Youth", "Skills", "Leadership"],
+    metadata: { tags: ["Youth", "Skills", "Leadership"] },
     color: "bg-blue-500"
   }
 ];
 
-const impactStats = [
-  { value: "250+", label: "Communities Reached", sub: "Across all 10 provinces", color: "text-primary" },
-  { value: "75,000+", label: "People Impacted", sub: "Direct and indirect", color: "text-green-600" },
-  { value: "500+", label: "Local Leaders Trained", sub: "Community & Traditional", color: "text-secondary" },
-  { value: "150+", label: "Projects Completed", sub: "Community-driven", color: "text-blue-500" }
+const defaultStats = [
+  { title: "250+", subtitle: "Communities Reached", content: "Across all 10 provinces", color: "text-primary" },
+  { title: "75,000+", subtitle: "People Impacted", content: "Direct and indirect", color: "text-green-600" },
+  { title: "500+", subtitle: "Local Leaders Trained", content: "Community & Traditional", color: "text-secondary" },
+  { title: "150+", subtitle: "Projects Completed", content: "Community-driven", color: "text-blue-500" }
 ];
 
-export default function CommunitiesPage() {
+export default async function CommunitiesPage() {
+  const { communities: dbC, partnerships: dbP, stats: dbS } = await getCommunitiesContent();
+
+  const communities = dbC.length > 0 ? dbC.map(c => ({
+    ...c,
+    features: Array.isArray(c.features) ? c.features : []
+  })) : defaultCommunities;
+
+  const partnerships = dbP.length > 0 ? dbP.map(p => ({
+    ...p,
+    tags: p.metadata?.tags || []
+  })) : defaultPartnerships.map(p => ({ ...p, tags: p.metadata.tags }));
+
+  const stats = dbS.length > 0 ? dbS.map(s => ({
+    value: s.title,
+    label: s.subtitle,
+    sub: s.content,
+    color: s.color
+  })) : defaultStats.map(s => ({
+    value: s.title,
+    label: s.subtitle,
+    sub: s.content,
+    color: s.color
+  }));
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
@@ -108,28 +140,31 @@ export default function CommunitiesPage() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-dark text-center mb-16">Empowering Local Solutions</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {mockCommunities.map((community, index) => (
-              <div key={index} className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-300">
-                <div 
-                  className="w-20 h-20 rounded-full flex items-center justify-center text-white mb-6 shadow-lg"
-                  style={{ backgroundColor: community.color }}
-                >
-                  {community.icon}
+            {communities.map((community, index) => {
+              const Icon = IconMap[community.icon] || Users;
+              return (
+                <div key={index} className="bg-gray-50 rounded-[2.5rem] p-8 border border-gray-100 flex flex-col items-center text-center shadow-sm hover:shadow-xl transition-all duration-300">
+                  <div 
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-white mb-6 shadow-lg"
+                    style={{ backgroundColor: community.color }}
+                  >
+                    <Icon size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold mb-4" style={{ color: community.color }}>{community.name}</h3>
+                  <p className="text-gray-600 text-sm mb-8 leading-relaxed">
+                    {community.description}
+                  </p>
+                  <ul className="space-y-3 text-left w-full mt-auto">
+                    {(community.features || []).map((feature: any, fIndex: number) => (
+                      <li key={fIndex} className="flex items-center gap-2 text-gray-700 text-xs font-medium">
+                        <CheckCircle2 size={16} className="text-primary shrink-0" />
+                        {feature.feature}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h3 className="text-xl font-bold mb-4" style={{ color: community.color }}>{community.name}</h3>
-                <p className="text-gray-600 text-sm mb-8 leading-relaxed">
-                  {community.description}
-                </p>
-                <ul className="space-y-3 text-left w-full mt-auto">
-                  {community.features.map((feature, fIndex) => (
-                    <li key={fIndex} className="flex items-center gap-2 text-gray-700 text-xs font-medium">
-                      <CheckCircle2 size={16} className="text-primary shrink-0" />
-                      {feature.feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -139,11 +174,11 @@ export default function CommunitiesPage() {
         <div className="container mx-auto px-4">
           <h2 className="text-3xl md:text-4xl font-bold text-dark text-center mb-16">Featured Partnerships</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {featuredPartnerships.map((partnership, index) => (
+            {partnerships.map((partnership, index) => (
               <div key={index} className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col sm:flex-row border border-gray-100">
                 <div className="relative w-full sm:w-2/5 min-h-[250px]">
                   <Image
-                    src={partnership.image}
+                    src={partnership.image || "/images/placeholder.jpg"}
                     alt={partnership.title}
                     fill
                     className="object-cover"
@@ -155,7 +190,7 @@ export default function CommunitiesPage() {
                     {partnership.description}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {partnership.tags.map((tag) => (
+                    {(partnership.tags || []).map((tag: string) => (
                       <span key={tag} className={`px-3 py-1 rounded-full text-[10px] font-bold text-white ${partnership.color}`}>
                         {tag}
                       </span>
@@ -173,7 +208,7 @@ export default function CommunitiesPage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-dark mb-16">Our Community Impact</h2>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {impactStats.map((stat, index) => (
+            {stats.map((stat, index) => (
               <div key={index} className="p-8 rounded-[2rem] bg-gray-50 border border-gray-100">
                 <h3 className={`text-4xl md:text-5xl font-bold mb-3 ${stat.color}`}>
                   {stat.value}

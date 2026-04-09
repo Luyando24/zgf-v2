@@ -73,11 +73,53 @@ export async function getPillarsContent() {
 
 export async function savePillars(pillars: any[], stats: any[]) {
     const supabase = await createClient();
+    
+    // Prepare pillars for saving
+    const pillarsToSave = pillars.map((p, i) => {
+        const { id, ...rest } = p;
+        // If id is a temporary string, don't include it so Postgres generates a real one
+        const isTempId = typeof id === 'string' && (id.startsWith('temp-') || id.startsWith('default-'));
+        return {
+            ...(isTempId ? {} : { id }),
+            ...rest,
+            order: i + 1,
+            is_active: true
+        };
+    });
+
+    // Prepare stats for saving
+    const statsToSave = stats.map((s, i) => {
+        const { id, ...rest } = s;
+        const isTempId = typeof id === 'string' && (id.startsWith('temp-') || id.startsWith('default-'));
+        return {
+            ...(isTempId ? {} : { id }),
+            ...rest,
+            type: 'pillar_stat',
+            order: i + 1,
+            is_active: true
+        };
+    });
+
     const [pillarsRes, statsRes] = await Promise.all([
-        supabase.from('pillars').upsert(pillars.map((p, i) => ({ ...p, order: i + 1 }))),
-        supabase.from('about_sections').upsert(stats.map((s, i) => ({ ...s, order: i + 1 })))
+        supabase.from('pillars').upsert(pillarsToSave),
+        supabase.from('about_sections').upsert(statsToSave)
     ]);
+
     const error = pillarsRes.error || statsRes.error;
+    if (!error) revalidatePath('/pillars');
+    return { success: !error, error: error?.message };
+}
+
+export async function deletePillar(id: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('pillars').delete().eq('id', id);
+    if (!error) revalidatePath('/pillars');
+    return { success: !error, error: error?.message };
+}
+
+export async function deletePillarStat(id: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('about_sections').delete().eq('id', id);
     if (!error) revalidatePath('/pillars');
     return { success: !error, error: error?.message };
 }
@@ -103,13 +145,84 @@ export async function saveServices(services: any[]) {
 // ==========================================
 export async function getCommunitiesContent() {
     const supabase = await createClient();
-    const { data } = await supabase.from('communities').select('*').order('order', { ascending: true });
-    return data || [];
+    const [communities, sections] = await Promise.all([
+        supabase.from('communities').select('*').order('order', { ascending: true }),
+        supabase.from('about_sections')
+            .select('*')
+            .in('type', ['community_partnership', 'community_impact_stat'])
+            .order('order', { ascending: true })
+            .order('id', { ascending: true })
+    ]);
+
+    return {
+        communities: communities.data || [],
+        partnerships: sections.data?.filter(s => s.type === 'community_partnership') || [],
+        stats: sections.data?.filter(s => s.type === 'community_impact_stat') || []
+    };
 }
 
-export async function saveCommunities(communities: any[]) {
+export async function saveCommunities(communities: any[], partnerships: any[], stats: any[]) {
     const supabase = await createClient();
-    const { error } = await supabase.from('communities').upsert(communities.map((c, i) => ({ ...c, order: i + 1 })));
+
+    // Prepare communities for saving
+    const communitiesToSave = communities.map((c, i) => {
+        const { id, ...rest } = c;
+        const isTempId = typeof id === 'string' && (id.startsWith('temp-') || id.startsWith('default-'));
+        return {
+            ...(isTempId ? {} : { id }),
+            ...rest,
+            order: i + 1,
+            is_active: true
+        };
+    });
+
+    // Prepare partnerships for saving
+    const partnershipsToSave = partnerships.map((p, i) => {
+        const { id, ...rest } = p;
+        const isTempId = typeof id === 'string' && (id.startsWith('temp-') || id.startsWith('default-'));
+        return {
+            ...(isTempId ? {} : { id }),
+            ...rest,
+            type: 'community_partnership',
+            order: i + 1,
+            is_active: true
+        };
+    });
+
+    // Prepare stats for saving
+    const statsToSave = stats.map((s, i) => {
+        const { id, ...rest } = s;
+        const isTempId = typeof id === 'string' && (id.startsWith('temp-') || id.startsWith('default-'));
+        return {
+            ...(isTempId ? {} : { id }),
+            ...rest,
+            type: 'community_impact_stat',
+            order: i + 1,
+            is_active: true
+        };
+    });
+
+    const [commRes, partRes, statsRes] = await Promise.all([
+        supabase.from('communities').upsert(communitiesToSave),
+        supabase.from('about_sections').upsert(partnershipsToSave),
+        supabase.from('about_sections').upsert(statsToSave)
+    ]);
+
+    const error = commRes.error || partRes.error || statsRes.error;
+    if (!error) revalidatePath('/communities');
+    return { success: !error, error: error?.message };
+}
+
+export async function deleteCommunity(id: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('communities').delete().eq('id', id);
+    if (!error) revalidatePath('/communities');
+    return { success: !error, error: error?.message };
+}
+
+export async function deleteAboutSection(id: string) {
+    const supabase = await createClient();
+    const { error } = await supabase.from('about_sections').delete().eq('id', id);
     if (!error) revalidatePath('/communities');
     return { success: !error, error: error?.message };
 }

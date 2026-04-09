@@ -2,13 +2,14 @@
 
 import { useState, Suspense } from 'react'
 import { login } from './actions'
-import { Lock, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { Lock, Mail, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
 function LoginForm() {
   const [pending, setPending] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
@@ -59,12 +60,24 @@ function LoginForm() {
             <input
               id="password"
               name="password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               required
-              className="block w-full pl-11 pr-4 py-4 border border-gray-100 rounded-2xl bg-gray-50 text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium sm:text-sm"
+              className="block w-full pl-11 pr-12 py-4 border border-gray-100 rounded-2xl bg-gray-50 text-dark placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium sm:text-sm"
               placeholder="••••••••"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-primary transition-colors focus:outline-none"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? (
+                <EyeOff className="h-5 w-5" />
+              ) : (
+                <Eye className="h-5 w-5" />
+              )}
+            </button>
           </div>
         </div>
 
