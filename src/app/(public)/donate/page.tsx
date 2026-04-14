@@ -1,12 +1,15 @@
-'use client';
-
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Heart, Users, Megaphone, TrendingUp, CreditCard, Wallet, Banknote } from 'lucide-react';
+import { Heart, Users, Megaphone, TrendingUp, CreditCard, Wallet, Banknote, Globe } from 'lucide-react';
 import CTA from "@/components/CTA";
+import { createClient } from "@/utils/supabase/server";
 
-export default function DonatePage() {
+export default async function DonatePage() {
+  const supabase = await createClient();
+  const { data: settings } = await supabase.from('settings').select('donation_link').single();
+  const donationLink = settings?.donation_link || "https://zgfdonations.zgf.org.zm/";
+
   const impactStats = [
     { label: "Local organizations supported", value: "100+" },
     { label: "Community members reached", value: "50,000+" },
@@ -14,6 +17,13 @@ export default function DonatePage() {
   ];
 
   const donationMethods = [
+    {
+      title: "Online Donation",
+      description: "The fastest and most secure way to support our mission directly through our donor portal.",
+      icon: <Globe className="w-8 h-8" />,
+      action: "Donate Online",
+      href: donationLink
+    },
     {
       title: "Mobile Money",
       description: "Fast and secure donations via Airtel Money or MTN Mobile Money.",
@@ -52,7 +62,7 @@ export default function DonatePage() {
             Your donation helps us strengthen civil society and empower communities across Zambia.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a href="#donate-now" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary-dark transition-colors">
+            <a href={donationLink} target="_blank" rel="noopener noreferrer" className="bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary-dark transition-colors">
               Donate Now
             </a>
             <a href="#why-donate" className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-dark transition-all">
@@ -141,17 +151,28 @@ export default function DonatePage() {
             <p className="text-xl text-gray-600">Choose your preferred donation method below</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {donationMethods.map((method, index) => (
               <div key={index} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all text-center flex flex-col h-full">
                 <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
                   {method.icon}
                 </div>
                 <h3 className="text-2xl font-bold text-dark mb-4">{method.title}</h3>
-                <p className="text-gray-600 mb-8 flex-grow">{method.description}</p>
-                <button className="bg-primary text-white px-6 py-3 rounded-full font-bold hover:bg-primary-dark transition-colors w-full">
-                  {method.action}
-                </button>
+                <p className="text-gray-600 mb-8 flex-grow text-sm">{method.description}</p>
+                {method.href ? (
+                  <a 
+                    href={method.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="bg-primary text-white px-6 py-3 rounded-full font-bold hover:bg-primary-dark transition-colors w-full inline-block"
+                  >
+                    {method.action}
+                  </a>
+                ) : (
+                  <button className="bg-primary text-white px-6 py-3 rounded-full font-bold hover:bg-primary-dark transition-colors w-full">
+                    {method.action}
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -167,3 +188,4 @@ export default function DonatePage() {
     </div>
   );
 }
+

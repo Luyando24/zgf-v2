@@ -66,6 +66,18 @@ export default function SiteSettings() {
                 />
               </div>
             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-gray-700">Online Donation Link</label>
+                <input
+                  type="url"
+                  name="donation_link"
+                  defaultValue={settings?.donation_link || ""}
+                  placeholder="https://zgfdonations.zgf.org.zm/"
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <label className="text-sm font-bold text-gray-700">Site Description</label>
               <textarea
