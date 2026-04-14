@@ -31,7 +31,8 @@ export default function DonatePage() {
       description: "The fastest and most secure way to support our mission directly through our donor portal.",
       icon: <Globe className="w-8 h-8" />,
       action: "Donate Online",
-      href: donationLink
+      href: donationLink,
+      recommended: true
     },
     {
       title: "Mobile Money",
@@ -162,7 +163,12 @@ export default function DonatePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {donationMethods.map((method, index) => (
-              <div key={index} className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all text-center flex flex-col h-full">
+              <div key={index} className={`relative bg-white p-8 rounded-[2.5rem] border transition-all text-center flex flex-col h-full ${method.recommended ? 'border-primary ring-2 ring-primary/10 shadow-xl scale-105 z-10' : 'border-gray-100 shadow-sm hover:shadow-lg'}`}>
+                {method.recommended && (
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                    Recommended
+                  </div>
+                )}
                 <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center text-primary mx-auto mb-6">
                   {method.icon}
                 </div>
